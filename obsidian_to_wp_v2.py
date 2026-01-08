@@ -199,12 +199,14 @@ def process_pairs(pairs, publisher, config, publish_folder):
 
         # 1. 한국어 포스트 생성/업데이트
         ko_metadata = parse_markdown_file(pair['ko_file'])
+        ko_category = ko_metadata.get('raw_metadata', {}).get('ko-category')
         ko_result = publisher.publish_post(
             title=ko_metadata['title'],
             content=ko_metadata['content'],
             language='ko',
             metadata={'obsidian_file_path': pair['ko_file']},
-            post_id=pair['ko_existing_id']
+            post_id=pair['ko_existing_id'],
+            category_name=ko_category
         )
 
         if not ko_result['success']:
@@ -227,12 +229,14 @@ def process_pairs(pairs, publisher, config, publish_folder):
         en_post_id = None
         if pair['en_file']:
             en_metadata = parse_markdown_file(pair['en_file'])
+            en_category = en_metadata.get('raw_metadata', {}).get('en-category')
             en_result = publisher.publish_post(
                 title=en_metadata['title'],
                 content=en_metadata['content'],
                 language='en',
                 metadata={'obsidian_file_path': pair['en_file']},
-                post_id=pair['en_existing_id']
+                post_id=pair['en_existing_id'],
+                category_name=en_category
             )
 
             if not en_result['success']:

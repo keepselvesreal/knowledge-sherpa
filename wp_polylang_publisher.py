@@ -77,9 +77,9 @@ class PolylangPublisher:
             print(f"⚠️ Polylang 엔드포인트 오류: {e}")
             return False
 
-    def publish_post(self, title, content, language, metadata=None, post_id=None):
+    def publish_post(self, title, content, language, metadata=None, post_id=None, category_name=None):
         """
-        WordPress 포스트 생성 또는 업데이트 (Polylang 언어 설정 포함)
+        WordPress 포스트 생성 또는 업데이트 (Polylang 언어 설정 + 카테고리 포함)
 
         Args:
             title: 포스트 제목
@@ -87,6 +87,7 @@ class PolylangPublisher:
             language: 언어 코드 ('ko' 또는 'en')
             metadata: 추가 메타데이터
             post_id: 기존 포스트 ID (업데이트 시)
+            category_name: 카테고리명 (옵션)
 
         Returns:
             dict: {
@@ -110,6 +111,12 @@ class PolylangPublisher:
                 'obsidian_language': language,
             }
         }
+
+        # 카테고리 설정
+        if category_name:
+            category_id = self.get_or_create_category(category_name)
+            if category_id:
+                post_data['categories'] = [category_id]
 
         if metadata:
             post_data['meta'].update(metadata)
@@ -306,3 +313,56 @@ class PolylangPublisher:
         except Exception as e:
             print(f"❌ 삭제 오류: {e}")
             return False
+
+    def get_or_create_category(self, category_name):
+        """
+        카테고리명으로 카테고리 ID를 조회하거나 없으면 생성
+
+        Args:
+            category_name: 카테고리명
+
+        Returns:
+            int: 카테고리 ID (실패 시 None)
+        """
+        if not category_name or category_name.strip() == '':
+            return None
+
+        try:
+            # 1. 기존 카테고리 검색
+            response = requests.get(
+                urljoin(self.rest_url, f'categories?search={category_name}&per_page=1'),
+                auth=self.auth,
+                timeout=10
+            )
+
+            if response.status_code == 200:
+                categories = response.json()
+                if categories:
+                    cat_id = categories[0]['id']
+                    print(f"  📂 카테고리 조회: {category_name} (ID: {cat_id})")
+                    return cat_id
+
+            # 2. 카테고리가 없으면 생성
+            create_response = requests.post(
+                urljoin(self.rest_url, 'categories'),
+                auth=self.auth,
+                json={
+                    'name': category_name,
+                    'slug': category_name.lower().replace(' ', '-')
+                },
+                timeout=10
+            )
+
+            if create_response.status_code in [200, 201]:
+                cat_data = create_response.json()
+                cat_id = cat_data['id']
+                print(f"  ✨ 카테고리 생성: {category_name} (ID: {cat_id})")
+                return cat_id
+            else:
+                error_msg = create_response.json().get('message', f"HTTP {create_response.status_code}")
+                print(f"  ⚠️ 카테고리 생성 실패: {category_name} - {error_msg}")
+                return None
+
+        except Exception as e:
+            print(f"  ⚠️ 카테고리 조회/생성 오류: {e}")
+            return None
