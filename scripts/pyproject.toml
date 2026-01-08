@@ -1,0 +1,16 @@
+[project]
+name = "obsidian-to-wordpress"
+version = "0.1.0"
+description = "Obsidian Markdown to WordPress Publisher"
+requires-python = ">=3.8"
+dependencies = [
+    "python-frontmatter>=1.0.0",
+    "markdown>=3.4.0",
+    "requests>=2.28.0",
+    "python-dotenv>=0.20.0",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
