@@ -210,6 +210,16 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
     color: #1e73be;
 }
 
+/* ===== 사이드바 너비 조정 (범주/개별 페이지) ===== */
+
+.sidebar {
+    width: 200px !important;
+}
+
+.content-area {
+    width: calc(100% - 200px) !important;
+}
+
 /* ===== 범주 페이지 카드 반응형 ===== */
 
 @media (max-width: 768px) {
