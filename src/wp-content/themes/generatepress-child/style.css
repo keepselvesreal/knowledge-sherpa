@@ -162,6 +162,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
 }
 
 .post-card-image {
@@ -169,6 +170,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
     height: 300px;
     overflow: hidden;
     flex-shrink: 0;
+    position: relative;
 }
 
 .post-card-image img {
@@ -210,6 +212,84 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
     color: #1e73be;
 }
 
+/* ===== 목차 트리거 버튼 ===== */
+
+/* 카테고리 페이지 카드의 버튼 */
+.toc-trigger-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.toc-trigger-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.toc-trigger-btn:active {
+    transform: scale(0.95);
+}
+
+.toc-icon {
+    display: inline-block;
+    line-height: 1;
+}
+
+/* Easy Table of Contents 플러그인 기본 버튼 스타일링 */
+.ez-toc-open-icon {
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 30px !important;
+    top: auto !important;
+    left: auto !important;
+    width: 50px !important;
+    height: 50px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    color: white !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 22px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    z-index: 999 !important;
+}
+
+.ez-toc-open-icon:hover {
+    background: rgba(0, 0, 0, 0.8) !important;
+    transform: scale(1.15) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+.ez-toc-open-icon:active {
+    transform: scale(0.95) !important;
+}
+
+/* 플러그인의 기본 텍스트 회전 제거 */
+.ez-toc-open-icon span.text {
+    transform: none !important;
+    writing-mode: horizontal-tb !important;
+    text-orientation: initial !important;
+}
+
 /* ===== 사이드바 너비 조정 (범주/개별 페이지) ===== */
 
 .sidebar {
@@ -236,6 +316,22 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
     .post-card-title {
         font-size: 15px;
     }
+
+    .toc-trigger-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+        bottom: 12px;
+        right: 12px;
+    }
+
+    .ez-toc-open-icon {
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 20px !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -255,5 +351,13 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
     .post-card-title {
         font-size: 14px;
+    }
+
+    .toc-trigger-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
+        bottom: 10px;
+        right: 10px;
     }
 }

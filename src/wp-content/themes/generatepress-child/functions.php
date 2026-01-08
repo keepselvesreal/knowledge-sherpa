@@ -128,3 +128,41 @@ add_filter('rest_authentication_errors', function($result) {
 add_action("wp_enqueue_scripts", function() {
     // 추가 스크립트/스타일은 여기에 작성
 });
+
+/**
+ * 7. Easy Table of Contents 버튼 텍스트 변경
+ *
+ * 현재 언어에 따라 버튼 텍스트를 명시적으로 설정
+ */
+add_action('wp_footer', function() {
+    // 개별 포스트 페이지인지 확인
+    if ( !is_singular( 'post' ) ) {
+        return;
+    }
+    ?>
+    <script>
+    (function() {
+        const button = document.querySelector('.ez-toc-open-icon');
+        if (!button) return;
+
+        // 현재 언어 감지 (예: 'ko-KR', 'en-US')
+        const lang = document.documentElement.lang || 'ko';
+
+        // 언어 코드의 앞 2글자만 추출 (예: 'ko-KR' → 'ko', 'en-US' → 'en')
+        const langPrefix = lang.split('-')[0];
+
+        // 언어 코드 앞부분에 따른 버튼 텍스트 (명시적 선언)
+        const texts = {
+            'ko': '목차',      // 한국어
+            'en': 'TOC'        // 영어
+        };
+
+        // 선언된 언어만 처리 (langPrefix가 texts에 있으면 텍스트 변경)
+        if (texts[langPrefix]) {
+            button.innerHTML = texts[langPrefix];
+        }
+    })();
+    </script>
+    <?php
+}, 20);
+
