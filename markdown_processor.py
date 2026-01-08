@@ -48,6 +48,7 @@ def parse_markdown_file(file_path):
             'language': metadata.get('language', 'ko'),
             'wp-post-id': metadata.get('wp-post-id'),
             'mirror_post_id': metadata.get('mirror_post_id'),
+            'group-id': metadata.get('group-id'),
             'raw_metadata': metadata,
         }
 

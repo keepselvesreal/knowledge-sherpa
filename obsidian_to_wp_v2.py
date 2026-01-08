@@ -64,9 +64,10 @@ def collect_language_pairs(publish_folder):
     """
     한국어와 영어 파일 쌍 수집
 
-    전략:
-    1. 모든 publish: true인 파일 수집
-    2. 한국어 파일 기준으로 mirror_post_id 또는 폴더 구조로 영어 파일 찾기
+    매칭 전략 (우선순위):
+    1. group_id 기반 매칭 (제목/파일명 무관)
+    2. mirror_post_id 사용
+    3. 폴더 구조 + 파일명 일치
 
     Returns:
         list: [
@@ -81,9 +82,10 @@ def collect_language_pairs(publish_folder):
     """
     markdown_files = get_markdown_files(publish_folder)
 
-    # 전체 파일 메타데이터 인덱싱 (post_id → 파일 매핑)
+    # 전체 파일 메타데이터 인덱싱
     all_files = {}  # {file_path: metadata}
     post_id_to_file = {}  # {post_id: file_path}
+    group_id_to_files = {}  # {group_id: [file_path, ...]}
 
     for file_path in markdown_files:
         metadata = parse_markdown_file(file_path)
@@ -92,54 +94,66 @@ def collect_language_pairs(publish_folder):
 
         all_files[file_path] = metadata
 
-        # post_id로도 인덱싱
+        # post_id로 인덱싱
         post_id = metadata.get('wp-post-id')
         if post_id:
             post_id_to_file[post_id] = file_path
 
+        # group_id로 인덱싱 (메타데이터 필드명: group-id)
+        group_id = metadata.get('group-id')
+        if group_id:
+            if group_id not in group_id_to_files:
+                group_id_to_files[group_id] = []
+            group_id_to_files[group_id].append(file_path)
+
     # 한국어 파일 기준으로 쌍 구성
     pairs = []
-    processed_ko = set()
+    processed_files = set()
 
     for ko_file, ko_metadata in all_files.items():
         # 이미 처리된 파일 스킵
-        if ko_file in processed_ko:
+        if ko_file in processed_files:
             continue
 
-        # 한국어 파일인지 확인
+        # 한국어 파일인지 확인 (영어 폴더가 아니어야 함)
         if '/english/' in ko_file or '/en/' in ko_file:
             continue
 
         ko_post_id = ko_metadata.get('wp-post-id')
-
-        # 영어 파일 찾기
         en_file = None
         en_post_id = None
 
-        # 전략 1: mirror_post_id 사용 (가장 정확함)
-        mirror_post_id = ko_metadata.get('mirror_post_id')
-        if mirror_post_id and mirror_post_id in post_id_to_file:
-            en_file = post_id_to_file[mirror_post_id]
-            if en_file in all_files:
-                en_post_id = all_files[en_file].get('wp-post-id')
+        # ========== 전략 1: group_id 기반 매칭 (최우선) ==========
+        ko_group_id = ko_metadata.get('group-id')
+        if ko_group_id and ko_group_id in group_id_to_files:
+            group_files = group_id_to_files[ko_group_id]
+            # group_id가 같은 파일 중 english 폴더의 파일 찾기
+            for candidate_file in group_files:
+                if candidate_file != ko_file and ('/english/' in candidate_file or '/en/' in candidate_file):
+                    if candidate_file not in processed_files:
+                        en_file = candidate_file
+                        en_post_id = all_files[en_file].get('wp-post-id')
+                        break
 
-        # 전략 2: 폴더 구조 활용 (mirror_post_id가 없으면)
+        # ========== 전략 2: mirror_post_id 사용 ==========
         if not en_file:
-            # english/ 폴더에서 같은 이름의 파일 찾기
+            mirror_post_id = ko_metadata.get('mirror_post_id')
+            if mirror_post_id and mirror_post_id in post_id_to_file:
+                en_file = post_id_to_file[mirror_post_id]
+                if en_file in all_files:
+                    en_post_id = all_files[en_file].get('wp-post-id')
+
+        # ========== 전략 3: 폴더 구조 + 파일명 일치 ==========
+        if not en_file:
             ko_dir = os.path.dirname(ko_file)
             en_dir = os.path.join(ko_dir, 'english')
-
             ko_basename = os.path.basename(ko_file)
 
             if os.path.exists(en_dir):
-                for en_candidate in os.listdir(en_dir):
-                    en_candidate_path = os.path.join(en_dir, en_candidate)
-                    if en_candidate_path in all_files:
-                        # 같은 파일명이면 매칭
-                        if ko_basename == en_candidate:
-                            en_file = en_candidate_path
-                            en_post_id = all_files[en_file].get('wp-post-id')
-                            break
+                en_candidate_path = os.path.join(en_dir, ko_basename)
+                if en_candidate_path in all_files and en_candidate_path not in processed_files:
+                    en_file = en_candidate_path
+                    en_post_id = all_files[en_file].get('wp-post-id')
 
         pair = {
             'title': ko_metadata.get('title', Path(ko_file).stem),
@@ -150,9 +164,9 @@ def collect_language_pairs(publish_folder):
         }
 
         pairs.append(pair)
-        processed_ko.add(ko_file)
+        processed_files.add(ko_file)
         if en_file:
-            processed_ko.add(en_file)
+            processed_files.add(en_file)
 
     return pairs
 
