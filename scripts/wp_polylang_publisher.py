@@ -337,14 +337,27 @@ class PolylangPublisher:
 
             if response.status_code == 200:
                 try:
-                    categories = response.json()
+                    # JSON 응답에서 경고 메시지 제거 (WordPress 디버그 출력 처리)
+                    response_text = response.text.strip()
+                    # JSON은 [ 또는 {로 시작하므로, 첫 번째 [ 또는 {부터 추출
+                    if '[' in response_text:
+                        json_start = response_text.index('[')
+                        json_end = response_text.rindex(']') + 1
+                        clean_json = response_text[json_start:json_end]
+                    elif '{' in response_text:
+                        json_start = response_text.index('{')
+                        json_end = response_text.rindex('}') + 1
+                        clean_json = response_text[json_start:json_end]
+                    else:
+                        clean_json = response_text
+
+                    categories = json.loads(clean_json)
                     if categories:
                         cat_id = categories[0]['id']
                         print(f"  📂 카테고리 조회: {category_name} (ID: {cat_id})")
                         return cat_id
-                except ValueError as json_err:
+                except (ValueError, json.JSONDecodeError) as json_err:
                     print(f"  ⚠️ 카테고리 조회 JSON 파싱 오류: {json_err}")
-                    print(f"  응답 내용 (처음 500자): {response.text[:500]}")
                     return None
 
             # 2. 카테고리가 없으면 생성
@@ -360,13 +373,21 @@ class PolylangPublisher:
 
             if create_response.status_code in [200, 201]:
                 try:
-                    cat_data = create_response.json()
+                    # JSON 응답에서 경고 메시지 제거
+                    response_text = create_response.text.strip()
+                    if '{' in response_text:
+                        json_start = response_text.index('{')
+                        json_end = response_text.rindex('}') + 1
+                        clean_json = response_text[json_start:json_end]
+                    else:
+                        clean_json = response_text
+
+                    cat_data = json.loads(clean_json)
                     cat_id = cat_data['id']
                     print(f"  ✨ 카테고리 생성: {category_name} (ID: {cat_id})")
                     return cat_id
-                except ValueError as json_err:
+                except (ValueError, json.JSONDecodeError) as json_err:
                     print(f"  ⚠️ 카테고리 생성 JSON 파싱 오류: {json_err}")
-                    print(f"  응답 내용 (처음 500자): {create_response.text[:500]}")
                     return None
             else:
                 try:

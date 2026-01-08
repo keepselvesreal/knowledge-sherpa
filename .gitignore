@@ -34,6 +34,7 @@ config.env
 # ===== 플러그인 (커스텀만 추적) =====
 /src/wp-content/plugins/*
 !/src/wp-content/plugins/custom-plugin/
+!/src/wp-content/plugins/polylang-rest-connector.php
 
 # ===== Python 환경 =====
 /scripts/.venv/

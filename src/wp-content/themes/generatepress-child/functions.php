@@ -96,43 +96,29 @@ function set_archive_posts_per_page($query) {
 add_filter('wp_is_application_passwords_available', '__return_true');
 
 /**
- * 5. REST API 권한 허용 (관리자가 REST API로 포스트 생성/수정 가능)
+ * 5. REST API 인증 확인
  *
- * 관리자 역할이 REST API를 통해 포스트를 생성/수정/삭제할 수 있도록 허용
+ * REST API 요청 시 인증 상태를 확인합니다.
+ * WordPress 관리자는 기본적으로 REST API 권한을 가지고 있으므로
+ * 별도의 권한 추가는 필요하지 않습니다.
  */
-add_action('rest_api_init', function() {
-    // 관리자 역할에 REST API 권한 추가
-    $admin_role = get_role('administrator');
-
-    if ($admin_role) {
-        // 포스트 관련 REST API 권한
-        $admin_role->add_cap('edit_posts');
-        $admin_role->add_cap('create_posts');
-        $admin_role->add_cap('delete_posts');
-        $admin_role->add_cap('publish_posts');
-
-        // 미디어 관련 REST API 권한
-        $admin_role->add_cap('upload_files');
-        $admin_role->add_cap('edit_files');
-        $admin_role->add_cap('delete_files');
-    }
-});
-
-/**
- * 6. REST API POST 권한 필터
- *
- * 인증된 사용자가 REST API를 통해 포스트를 생성할 수 있도록 허용
- */
-add_filter('rest_allow_anonymous_comments', '__return_false');
 add_filter('rest_authentication_errors', function($result) {
-    if ($result === null && is_user_logged_in()) {
+    // 이미 인증 에러가 있으면 그대로 반환
+    if (is_wp_error($result)) {
+        return $result;
+    }
+
+    // 인증된 사용자면 true 반환
+    if (is_user_logged_in()) {
         return true;
     }
+
+    // 그 외의 경우 기본 동작
     return $result;
 });
 
 /**
- * 7. 페이지별 스크립트/스타일 로드 (향후 확장용)
+ * 6. 페이지별 스크립트/스타일 로드 (향후 확장용)
  *
  * 현재는 비어있지만, 다음과 같은 경우 여기에 추가 가능:
  * - archive.php 페이지에서만 특정 CSS 로드

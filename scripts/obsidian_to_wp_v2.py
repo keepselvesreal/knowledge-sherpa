@@ -175,6 +175,10 @@ def find_cover_image(folder_path):
     """
     폴더에서 cover 파일명의 이미지 찾기
 
+    마크다운 파일의 디렉토리에서 먼저 찾고,
+    없으면 부모 디렉토리에서도 찾습니다.
+    (영어 파일의 경우 english/ 폴더가 아닌 상위 폴더에 cover가 있을 수 있음)
+
     Args:
         folder_path: 폴더 경로
 
@@ -182,12 +186,21 @@ def find_cover_image(folder_path):
         str: 이미지 파일 경로 또는 None
     """
     cover_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
-    folder = os.path.dirname(folder_path)
 
+    # 1. 마크다운 파일의 디렉토리에서 cover 찾기
+    current_folder = os.path.dirname(folder_path)
     for ext in cover_extensions:
-        cover_path = os.path.join(folder, f'cover{ext}')
+        cover_path = os.path.join(current_folder, f'cover{ext}')
         if os.path.exists(cover_path):
             return cover_path
+
+    # 2. 부모 디렉토리에서 cover 찾기 (english 폴더 등에 있을 때)
+    parent_folder = os.path.dirname(current_folder)
+    if parent_folder != current_folder:  # 루트가 아닌 경우만
+        for ext in cover_extensions:
+            cover_path = os.path.join(parent_folder, f'cover{ext}')
+            if os.path.exists(cover_path):
+                return cover_path
 
     return None
 
