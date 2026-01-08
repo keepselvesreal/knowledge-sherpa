@@ -133,3 +133,117 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
         padding: 20px;
     }
 }
+
+/* ===== 범주 페이지 카드 그리드 레이아웃 ===== */
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin: 40px 0;
+    padding: 0 20px;
+}
+
+.post-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.post-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.post-card-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.post-card-image {
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.post-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.post-card:hover .post-card-image img {
+    transform: scale(1.05);
+}
+
+.post-card-content {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+
+.post-card-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.post-card-title a {
+    color: #222;
+    text-decoration: none;
+}
+
+.post-card-title a:hover {
+    color: #1e73be;
+}
+
+/* ===== 범주 페이지 카드 반응형 ===== */
+
+@media (max-width: 768px) {
+    .posts-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 0 15px;
+    }
+
+    .post-card-image {
+        height: 250px;
+    }
+
+    .post-card-title {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .posts-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 0 10px;
+    }
+
+    .post-card-image {
+        height: 200px;
+    }
+
+    .post-card-content {
+        padding: 15px;
+    }
+
+    .post-card-title {
+        font-size: 14px;
+    }
+}

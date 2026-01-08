@@ -171,6 +171,27 @@ def collect_language_pairs(publish_folder):
     return pairs
 
 
+def find_cover_image(folder_path):
+    """
+    폴더에서 cover 파일명의 이미지 찾기
+
+    Args:
+        folder_path: 폴더 경로
+
+    Returns:
+        str: 이미지 파일 경로 또는 None
+    """
+    cover_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+    folder = os.path.dirname(folder_path)
+
+    for ext in cover_extensions:
+        cover_path = os.path.join(folder, f'cover{ext}')
+        if os.path.exists(cover_path):
+            return cover_path
+
+    return None
+
+
 def process_pairs(pairs, publisher, config, publish_folder):
     """
     한국어/영어 포스트 쌍 처리 및 번역 관계 설정
@@ -189,6 +210,7 @@ def process_pairs(pairs, publisher, config, publish_folder):
         'en_updated': 0,
         'linked': 0,
         'failed': 0,
+        'thumbnail_set': 0,
     }
 
     for pair in pairs:
@@ -225,6 +247,18 @@ def process_pairs(pairs, publisher, config, publish_folder):
         save_metadata_to_file(pair['ko_file'], 'wp-post-id', ko_post_id)
         print(f"   ✅ 한국어 포스트: ID {ko_post_id}")
 
+        # 한국어 포스트에 cover 이미지 설정
+        cover_image = find_cover_image(pair['ko_file'])
+        if cover_image:
+            thumbnail_result = publisher.set_featured_image(ko_post_id, cover_image)
+            if thumbnail_result['success']:
+                stats['thumbnail_set'] += 1
+                print(f"   {thumbnail_result['message']}")
+            else:
+                print(f"   ⚠️ {thumbnail_result['message']}")
+        else:
+            print(f"   ℹ️ cover 이미지 없음")
+
         # 2. 영어 파일이 있으면 처리
         en_post_id = None
         if pair['en_file']:
@@ -255,6 +289,16 @@ def process_pairs(pairs, publisher, config, publish_folder):
             save_metadata_to_file(pair['en_file'], 'wp-post-id', en_post_id)
             print(f"   ✅ 영어 포스트: ID {en_post_id}")
 
+            # 영어 포스트에 cover 이미지 설정
+            en_cover_image = find_cover_image(pair['en_file'])
+            if en_cover_image:
+                en_thumbnail_result = publisher.set_featured_image(en_post_id, en_cover_image)
+                if en_thumbnail_result['success']:
+                    stats['thumbnail_set'] += 1
+                    print(f"   {en_thumbnail_result['message']}")
+                else:
+                    print(f"   ⚠️ {en_thumbnail_result['message']}")
+
             # 3. 번역 관계 설정
             link_result = publisher.link_translations(ko_post_id, en_post_id)
             if link_result['success']:
@@ -272,6 +316,7 @@ def process_pairs(pairs, publisher, config, publish_folder):
     print(f"  한국어 업데이트: {stats['ko_updated']}")
     print(f"  영어 생성: {stats['en_created']}")
     print(f"  영어 업데이트: {stats['en_updated']}")
+    print(f"  썸네일 설정: {stats['thumbnail_set']}")
     print(f"  번역 관계 설정: {stats['linked']}")
     print(f"  실패: {stats['failed']}")
     print("="*60)
