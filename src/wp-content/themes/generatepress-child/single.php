@@ -48,7 +48,26 @@ get_header(); ?>
 	 * @since 2.0
 	 */
 	do_action( 'generate_after_primary_content_area' );
+	?>
 
+	<aside class="sidebar-popular-posts">
+		<?php
+		// 전체 인기글 (조회수 기반)
+		echo '<h3>인기글</h3>';
+		echo do_shortcode('[wpp limit="1" stats_tag="views" order_by="views"]');
+
+		// 현재 카테고리의 인기글
+		$categories = get_the_category();
+		if (!empty($categories)) {
+			$category_id = $categories[0]->term_id;
+			$category_name = $categories[0]->name;
+			echo '<h3>' . esc_html($category_name) . ' 인기글</h3>';
+			echo do_shortcode('[wpp limit="1" cat="' . $category_id . '" stats_tag="views" order_by="views"]');
+		}
+		?>
+	</aside>
+
+	<?php
 	generate_construct_sidebars();
 
 	get_footer();
