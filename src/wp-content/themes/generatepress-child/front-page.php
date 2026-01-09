@@ -115,15 +115,23 @@ window.addEventListener('load', function() {
     document.querySelectorAll('.source-card').forEach(card => {
         card.addEventListener('click', function(e) {
             e.preventDefault();
-            const category = this.dataset.category;
+            const categoryBase = this.dataset.category;
             const baseUrl = window.location.origin;
 
-            // 선택된 언어에 따라 URL 구성
+            // 카테고리 slug 규칙: 범주명-ko (한국어), 범주명-en (영어)
+            let categorySlug;
+            if (selectedLang === 'en') {
+                categorySlug = categoryBase + '-en';
+            } else {
+                categorySlug = categoryBase + '-ko';
+            }
+
+            // URL 구성
             let url;
             if (selectedLang === 'en') {
-                url = baseUrl + '/en/category/' + category + '/';
+                url = baseUrl + '/en/category/' + categorySlug + '/';
             } else {
-                url = baseUrl + '/category/' + category + '/';
+                url = baseUrl + '/category/' + categorySlug + '/';
             }
 
             window.location.href = url;
