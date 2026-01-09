@@ -166,3 +166,14 @@ add_action('wp_footer', function() {
     <?php
 }, 20);
 
+/**
+ * 8. 포스트 네비게이션 텍스트 커스터마이징
+ *
+ * 이전 글 네비게이션의 화살표 기호를 "이전 글: " 텍스트로 변경
+ */
+add_filter('generate_post_navigation_args', function($args) {
+    $args['previous_format'] = '<div class="nav-previous"><span class="prev">이전 글: %link</span></div>';
+    $args['next_format'] = '<div class="nav-next"><span class="next">다음 글: %link</span></div>';
+    return $args;
+});
+
