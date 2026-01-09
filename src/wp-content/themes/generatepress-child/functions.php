@@ -177,3 +177,79 @@ add_filter('generate_post_navigation_args', function($args) {
     return $args;
 });
 
+/**
+ * 9. 개별 포스트 페이지 breadcrumb 네비게이션
+ *
+ * 포스트가 속한 카테고리 계층을 표시합니다.
+ * 예: book > it 또는 book-en > it-en (언어에 따라)
+ *
+ * Polylang 카테고리 slug 규칙: 범주명-ko (한국어), 범주명-en (영어)
+ */
+function generate_post_breadcrumb() {
+    if ( ! is_singular( 'post' ) ) {
+        return;
+    }
+
+    $categories = get_the_category();
+    if ( empty( $categories ) ) {
+        return;
+    }
+
+    // 현재 언어 감지 (Polylang)
+    $current_lang = function_exists( 'pll_current_language' ) ? pll_current_language() : 'ko';
+    $lang_suffix = ( $current_lang === 'en' ) ? '-en' : '-ko';
+
+    // 첫 번째 카테고리의 계층을 표시
+    $category = $categories[0];
+    $breadcrumb_items = array();
+
+    // 부모 카테고리부터 현재 카테고리까지 계층 구성
+    $ancestors = get_ancestors( $category->term_id, 'category' );
+    $ancestors = array_reverse( $ancestors );
+
+    foreach ( $ancestors as $ancestor_id ) {
+        $ancestor = get_term( $ancestor_id, 'category' );
+        if ( ! is_wp_error( $ancestor ) ) {
+            $breadcrumb_items[] = array(
+                'name' => $ancestor->name,
+                'term_id' => $ancestor->term_id,
+            );
+        }
+    }
+
+    // 현재 카테고리 추가
+    $breadcrumb_items[] = array(
+        'name' => $category->name,
+        'term_id' => $category->term_id,
+    );
+
+    if ( empty( $breadcrumb_items ) ) {
+        return;
+    }
+
+    // breadcrumb HTML 생성
+    echo '<nav class="post-breadcrumb" aria-label="breadcrumb">';
+    echo '<div class="breadcrumb-path">';
+
+    foreach ( $breadcrumb_items as $index => $item ) {
+        // 카테고리 페이지 URL 생성 (term_id 직접 사용 - DB 쿼리 최소화)
+        $category_url = get_category_link( $item['term_id'] );
+
+        // 영어인 경우 URL 수정 (Polylang 규칙)
+        if ( $current_lang === 'en' && ! str_contains( $category_url, '/en/' ) ) {
+            $category_url = str_replace( home_url(), home_url() . '/en', $category_url );
+        }
+
+        echo '<a href="' . esc_url( $category_url ) . '" class="breadcrumb-item">' . esc_html( $item['name'] ) . '</a>';
+
+        if ( $index < count( $breadcrumb_items ) - 1 ) {
+            echo '<span class="breadcrumb-separator"> / </span>';
+        }
+    }
+
+    echo '</div>';
+    echo '</nav>';
+}
+
+add_action( 'generate_before_content', 'generate_post_breadcrumb' );
+
