@@ -9,6 +9,7 @@ config.env
 # 데이터 (사용자 업로드, 캐시)
 /data/
 !/data/.gitkeep
+/src/wp-data/
 
 # IDE/Editor
 .vscode/
@@ -21,11 +22,12 @@ config.env
 .DS_Store
 Thumbs.db
 
-# Python
+# Python & Scripts
 .venv/
 __pycache__/
 *.py[cod]
 *.egg-info/
+/scripts/
 
 # 임시 파일
 *.tmp

@@ -32,9 +32,9 @@ services:
       - ./wp-content/themes:/var/www/html/wp-content/themes
       - ./wp-content/plugins:/var/www/html/wp-content/plugins
 
-      # 데이터 (Docker volume) - 상위 디렉토리의 data 폴더
-      - ../data/wp-content/uploads:/var/www/html/wp-content/uploads
-      - ../data/wp-content/cache:/var/www/html/wp-content/cache
+      # 데이터 (Docker volume) - src 디렉토리 내의 wp-data 폴더
+      - ./wp-data/wp-content/uploads:/var/www/html/wp-content/uploads
+      - ./wp-data/wp-content/cache:/var/www/html/wp-content/cache
     ports:
       - "80:80"
 
