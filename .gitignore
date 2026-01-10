@@ -1,59 +1,32 @@
-# ===== 데이터 폴더 (무시) =====
-/data/**
-!/data/.gitkeep
+# 환경 설정
+.env
+config.env
 
-# ===== 로그 =====
+# 로그
 /logs/
 *.log
 
-# ===== 환경 설정 =====
-.env
-.env.local
-config.env
+# 데이터 (사용자 업로드, 캐시)
+/data/
+!/data/.gitkeep
 
-# ===== WordPress 코어 (무시) =====
-/src/wp-*.php
-/src/index.php
-/src/wp-admin/
-/src/wp-includes/
-/src/wp-login.php
-/src/wp-content/languages/
-
-# ===== WordPress 컨텐츠 (선택적) =====
-# src 내에서 plugins와 themes는 추적, 나머지는 무시
-/src/wp-content/*
-!/src/wp-content/themes/
-!/src/wp-content/plugins/
-!/src/wp-content/mu-plugins/
-!/src/wp-content/index.php
-
-# ===== 테마 (커스텀만 추적) =====
-/src/wp-content/themes/*
-!/src/wp-content/themes/generatepress-child/
-
-# ===== 플러그인 (커스텀만 추적) =====
-/src/wp-content/plugins/*
-!/src/wp-content/plugins/custom-plugin/
-!/src/wp-content/plugins/polylang-rest-connector.php
-
-# ===== Python 환경 =====
-/scripts/.venv/
-/scripts/__pycache__/
-/scripts/*.pyc
-/scripts/*.egg-info/
-/scripts/.pytest_cache/
-
-# ===== IDE 설정 =====
+# IDE/Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# ===== OS 파일 =====
+# OS
 .DS_Store
 Thumbs.db
 
-# ===== 임시 파일 =====
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 임시 파일
 *.tmp
 *.bak

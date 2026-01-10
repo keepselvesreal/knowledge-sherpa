@@ -1,6 +1,0 @@
-pyproject.toml
-obsidian_to_wordpress.egg-info/PKG-INFO
-obsidian_to_wordpress.egg-info/SOURCES.txt
-obsidian_to_wordpress.egg-info/dependency_links.txt
-obsidian_to_wordpress.egg-info/requires.txt
-obsidian_to_wordpress.egg-info/top_level.txt
