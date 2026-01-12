@@ -27,11 +27,30 @@ function sync_parent_sidebar_to_child() {
  * VM에서도 동일한 설정이 자동으로 적용되도록 함
  *
  * 효과:
- * - 새로운 사이트 설치 시: 로컬과 동일한 기본 설정 적용
+ * - 새로운 사이트 설치 시: 로컬과 동일한 기본 설정 적용 (left-sidebar 레이아웃)
  * - 기존 사이트: 필요시 수동으로 덮어쓰기 가능
+ *
+ * 동기화 항목:
+ * - generate_settings (레이아웃 설정: left-sidebar)
+ * - theme_mods_generatepress-child.sidebars_widgets (사이드바 구성)
  */
 add_action('wp_loaded', 'sync_theme_settings');
 function sync_theme_settings() {
+    // 1. GeneratePress 레이아웃 설정 동기화
+    $generate_settings = get_option('generate_settings', array());
+
+    // generate_settings가 없거나 layout이 설정되지 않았으면 left-sidebar로 설정
+    if (empty($generate_settings) || !isset($generate_settings['layout'])) {
+        $default_generate_settings = array(
+            'layout' => 'left-sidebar',
+            'layout_setting' => 'left-sidebar',
+            'blog_layout_setting' => 'left-sidebar',
+            'single_layout_setting' => 'left-sidebar'
+        );
+        update_option('generate_settings', $default_generate_settings);
+    }
+
+    // 2. 자식 테마 모드 (sidebars_widgets) 동기화
     $current_theme = get_stylesheet();
     $option_name = "theme_mods_{$current_theme}";
     $theme_mods = get_option($option_name, array());
