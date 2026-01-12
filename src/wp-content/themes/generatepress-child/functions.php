@@ -33,6 +33,7 @@ function sync_parent_sidebar_to_child() {
  * 동기화 항목:
  * - generate_settings (레이아웃 설정: left-sidebar)
  * - theme_mods_generatepress-child.sidebars_widgets (사이드바 구성)
+ * - widget_block (블록 위젯 - VM의 불필요한 Archives, Categories 제거)
  */
 add_action('wp_loaded', 'sync_theme_settings');
 function sync_theme_settings() {
@@ -50,7 +51,16 @@ function sync_theme_settings() {
         update_option('generate_settings', $default_generate_settings);
     }
 
-    // 2. 자식 테마 모드 (sidebars_widgets) 동기화
+    // 2. 블록 위젯 정리 (widget_block에서 불필요한 Archives, Categories 제거)
+    // VM에만 있는 block-5(Archives), block-6(Categories) 제거
+    $widget_blocks = get_option('widget_block', array());
+    if (!empty($widget_blocks) && (isset($widget_blocks[5]) || isset($widget_blocks[6]))) {
+        unset($widget_blocks[5]);
+        unset($widget_blocks[6]);
+        update_option('widget_block', $widget_blocks);
+    }
+
+    // 3. 자식 테마 모드 (sidebars_widgets) 동기화
     $current_theme = get_stylesheet();
     $option_name = "theme_mods_{$current_theme}";
     $theme_mods = get_option($option_name, array());
@@ -100,7 +110,7 @@ function sync_theme_settings() {
 }
 
 /**
- * 3. 범주 페이지(archive.php)에서 페이지네이션 설정
+ * 4. 범주 페이지(archive.php)에서 페이지네이션 설정
  *
  * 범주별 페이지에서 한 페이지에 9개의 포스트를 표시합니다.
  * 3열 그리드 레이아웃에 맞춰 3행(9개)씩 표시됩니다.
@@ -119,7 +129,7 @@ function set_archive_posts_per_page($query) {
 }
 
 /**
- * 4. Application Passwords 로컬 개발 환경 허용
+ * 5. Application Passwords 로컬 개발 환경 허용
  *
  * WordPress는 기본적으로 HTTPS에서만 Application Passwords 사용을 허용하지만,
  * 로컬 개발 환경(HTTP)에서도 사용할 수 있도록 필터를 추가합니다.
@@ -129,7 +139,7 @@ function set_archive_posts_per_page($query) {
 add_filter('wp_is_application_passwords_available', '__return_true');
 
 /**
- * 5. REST API 인증 확인
+ * 6. REST API 인증 확인
  *
  * REST API 요청 시 인증 상태를 확인합니다.
  * WordPress 관리자는 기본적으로 REST API 권한을 가지고 있으므로
@@ -151,7 +161,7 @@ add_filter('rest_authentication_errors', function($result) {
 });
 
 /**
- * 6. 페이지별 스크립트/스타일 로드 (향후 확장용)
+ * 7. 페이지별 스크립트/스타일 로드 (향후 확장용)
  *
  * 현재는 비어있지만, 다음과 같은 경우 여기에 추가 가능:
  * - archive.php 페이지에서만 특정 CSS 로드
@@ -163,7 +173,7 @@ add_action("wp_enqueue_scripts", function() {
 });
 
 /**
- * 7. Easy Table of Contents 버튼 텍스트 변경
+ * 8. Easy Table of Contents 버튼 텍스트 변경
  *
  * 현재 언어에 따라 버튼 텍스트를 명시적으로 설정
  */
@@ -200,7 +210,7 @@ add_action('wp_footer', function() {
 }, 20);
 
 /**
- * 8. 포스트 네비게이션 텍스트 커스터마이징
+ * 9. 포스트 네비게이션 텍스트 커스터마이징
  *
  * 이전 글 네비게이션의 화살표 기호를 "이전 글: " 텍스트로 변경
  */
@@ -211,7 +221,7 @@ add_filter('generate_post_navigation_args', function($args) {
 });
 
 /**
- * 9. 개별 포스트 페이지 breadcrumb 네비게이션
+ * 10. 개별 포스트 페이지 breadcrumb 네비게이션
  *
  * 포스트가 속한 카테고리 계층을 표시합니다.
  * 예: book > it 또는 book-en > it-en (언어에 따라)
