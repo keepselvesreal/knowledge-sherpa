@@ -21,48 +21,66 @@ function sync_parent_sidebar_to_child() {
 }
 
 /**
- * 2. sidebar-2에 categories-1 위젯 항상 유지
+ * 2. 테마 설정 자동화 및 동기화
  *
- * 모든 페이지 로드 시 sidebar-2에 카테고리 위젯이 있는지 확인하고,
- * 없으면 자동으로 추가합니다.
+ * 로컬 DB의 테마 설정을 기본값으로 삼아,
+ * VM에서도 동일한 설정이 자동으로 적용되도록 함
  *
- * 주의: 이 함수는 데이터베이스에 위젯을 추가할 뿐,
- * 실제 화면 출력은 각 템플릿에서 generate_construct_sidebars()
- * 호출 시에만 일어납니다.
- *
- * 영향 범위:
- * - archive.php (범주별 페이지): generate_construct_sidebars() 호출 ✅
- * - single.php (개별 포스트): generate_construct_sidebars() 호출 ✅
- * - front-page.php (메인 페이지): 출력 코드 없음 (사이드바 안 보임)
+ * 효과:
+ * - 새로운 사이트 설치 시: 로컬과 동일한 기본 설정 적용
+ * - 기존 사이트: 필요시 수동으로 덮어쓰기 가능
  */
-add_action('wp_loaded', 'ensure_sidebar_categories_widget');
-function ensure_sidebar_categories_widget() {
+add_action('wp_loaded', 'sync_theme_settings');
+function sync_theme_settings() {
     $current_theme = get_stylesheet();
     $option_name = "theme_mods_{$current_theme}";
     $theme_mods = get_option($option_name, array());
 
-    // sidebars_widgets 구조 확인 및 초기화
-    if (!isset($theme_mods['sidebars_widgets'])) {
-        $theme_mods['sidebars_widgets'] = array(
+    /**
+     * 기본 테마 설정값 (로컬에서 정의)
+     *
+     * 참고: 이 값들은 로컬 WordPress에서 확인 가능:
+     * MySQL wp_options 테이블 → theme_mods_generatepress-child
+     */
+    $default_settings = array(
+        'sidebars_widgets' => array(
             'time' => time(),
-            'data' => array()
-        );
-    }
+            'data' => array(
+                'wp_inactive_widgets' => array(),
+                'sidebar-1' => array(),           // 왼쪽: 비어있음
+                'sidebar-2' => array('categories-1'), // 왼쪽: 카테고리 위젯
+                'header' => array(),
+                'footer-1' => array(),
+                'footer-2' => array(),
+                'footer-3' => array(),
+                'footer-4' => array(),
+                'footer-5' => array(),
+                'footer-bar' => array(),
+                'top-bar' => array()
+            )
+        )
+    );
 
-    if (!isset($theme_mods['sidebars_widgets']['data'])) {
-        $theme_mods['sidebars_widgets']['data'] = array();
+    // 설정이 비어있거나 필요한 구조가 없으면 기본값으로 초기화
+    if (empty($theme_mods) || !isset($theme_mods['sidebars_widgets'])) {
+        update_option($option_name, $default_settings);
     }
+    // 기존 설정이 있으면 sidebar-2에만 카테고리 위젯 보장
+    else {
+        if (!isset($theme_mods['sidebars_widgets']['data'])) {
+            $theme_mods['sidebars_widgets']['data'] = array();
+        }
 
-    // sidebar-2 초기화
-    if (!isset($theme_mods['sidebars_widgets']['data']['sidebar-2'])) {
-        $theme_mods['sidebars_widgets']['data']['sidebar-2'] = array();
-    }
+        if (!isset($theme_mods['sidebars_widgets']['data']['sidebar-2'])) {
+            $theme_mods['sidebars_widgets']['data']['sidebar-2'] = array();
+        }
 
-    // categories-1(카테고리 위젯)이 sidebar-2에 없으면 추가
-    if (!in_array('categories-1', $theme_mods['sidebars_widgets']['data']['sidebar-2'])) {
-        $theme_mods['sidebars_widgets']['data']['sidebar-2'][] = 'categories-1';
-        $theme_mods['sidebars_widgets']['time'] = time();
-        update_option($option_name, $theme_mods);
+        // sidebar-2에 categories-1이 없으면 추가
+        if (!in_array('categories-1', $theme_mods['sidebars_widgets']['data']['sidebar-2'])) {
+            $theme_mods['sidebars_widgets']['data']['sidebar-2'][] = 'categories-1';
+            $theme_mods['sidebars_widgets']['time'] = time();
+            update_option($option_name, $theme_mods);
+        }
     }
 }
 
