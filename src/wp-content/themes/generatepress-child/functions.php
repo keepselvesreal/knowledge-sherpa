@@ -80,26 +80,22 @@ function sync_theme_settings() {
         )
     );
 
-    // 설정이 비어있거나 필요한 구조가 없으면 기본값으로 초기화
-    if (empty($theme_mods) || !isset($theme_mods['sidebars_widgets'])) {
-        update_option($option_name, $default_settings);
-    }
-    // 기존 설정이 있으면 sidebar-2에만 카테고리 위젯 보장
-    else {
-        if (!isset($theme_mods['sidebars_widgets']['data'])) {
-            $theme_mods['sidebars_widgets']['data'] = array();
-        }
+    // 사이드바 위젯이 없거나 기본값과 다르면 동기화
+    // (이렇게 하면 로컬 설정을 기준으로 모든 환경에서 동일한 레이아웃 유지)
+    if (empty($theme_mods) ||
+        !isset($theme_mods['sidebars_widgets']) ||
+        !isset($theme_mods['sidebars_widgets']['data']) ||
+        $theme_mods['sidebars_widgets']['data'] !== $default_settings['sidebars_widgets']['data']) {
 
-        if (!isset($theme_mods['sidebars_widgets']['data']['sidebar-2'])) {
-            $theme_mods['sidebars_widgets']['data']['sidebar-2'] = array();
-        }
-
-        // sidebar-2에 categories-1이 없으면 추가
-        if (!in_array('categories-1', $theme_mods['sidebars_widgets']['data']['sidebar-2'])) {
-            $theme_mods['sidebars_widgets']['data']['sidebar-2'][] = 'categories-1';
+        // theme_mods 전체 구조 유지하면서 sidebars_widgets만 업데이트
+        if (empty($theme_mods)) {
+            $theme_mods = $default_settings;
+        } else {
+            $theme_mods['sidebars_widgets'] = $default_settings['sidebars_widgets'];
             $theme_mods['sidebars_widgets']['time'] = time();
-            update_option($option_name, $theme_mods);
         }
+
+        update_option($option_name, $theme_mods);
     }
 }
 
